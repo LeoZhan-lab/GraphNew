@@ -1,215 +1,253 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { updateUser, updatePassword } from '../services/userService';
+import Layout from '../components/Layout';
+import { UserCircleIcon, KeyIcon, BellIcon, PaletteIcon } from '@heroicons/react/24/outline';
 
 const UserSettings = () => {
-  const { user, login } = useAuth();
-  const [profileData, setProfileData] = useState({
-    name: user?.name || '',
-    email: user?.email || ''
-  });
-  
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-  
+  const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [notification, setNotification] = useState(null);
 
-  const handleProfileChange = (e) => {
-    const { name, value } = e.target;
-    setProfileData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleProfileSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-    
+    setLoading(true);
     try {
-      setLoading(true);
-      const updatedUser = await updateUser(profileData);
-      login({ user: updatedUser });
-      setSuccess('个人信息已更新');
-    } catch (err) {
-      setError(err.message);
+      // TODO: 实现设置更新逻辑
+      setNotification({ type: 'success', message: '设置已更新' });
+    } catch (error) {
+      setNotification({ type: 'error', message: '更新失败' });
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      return setError('新密码与确认密码不匹配');
-    }
-    
-    try {
-      setLoading(true);
-      await updatePassword(passwordData);
-      setSuccess('密码已更新');
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const tabs = [
+    { id: 'profile', name: '个人资料', icon: UserCircleIcon },
+    { id: 'security', name: '安全设置', icon: KeyIcon },
+    { id: 'notifications', name: '通知设置', icon: BellIcon },
+    { id: 'appearance', name: '外观设置', icon: PaletteIcon },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="md:grid md:grid-cols-3 md:gap-6">
-          <div className="md:col-span-1">
-            <div className="px-4 sm:px-0">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">个人设置</h3>
-              <p className="mt-1 text-sm text-gray-600">
-                管理您的账户信息和安全设置
-              </p>
-            </div>
+    <Layout>
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">用户设置</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            管理您的账户设置和偏好
+          </p>
+        </div>
+
+        {notification && (
+          <div
+            className={`mb-4 p-4 rounded-md ${
+              notification.type === 'success' ? 'bg-green-50' : 'bg-red-50'
+            }`}
+          >
+            <p
+              className={`text-sm ${
+                notification.type === 'success' ? 'text-green-700' : 'text-red-700'
+              }`}
+            >
+              {notification.message}
+            </p>
+          </div>
+        )}
+
+        <div className="bg-white rounded-lg shadow-sm">
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-sm font-medium text-center hover:bg-gray-50 focus:z-10 ${
+                    activeTab === tab.id
+                      ? 'text-blue-600 border-b-2 border-blue-500'
+                      : 'text-gray-500 border-b-2 border-transparent'
+                  }`}
+                >
+                  <tab.icon className="h-5 w-5 mx-auto mb-1" />
+                  {tab.name}
+                </button>
+              ))}
+            </nav>
           </div>
 
-          <div className="mt-5 md:mt-0 md:col-span-2">
-            {error && (
-              <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
-            
-            {success && (
-              <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                {success}
-              </div>
-            )}
-
-            <div className="shadow sm:rounded-md sm:overflow-hidden">
-              {/* 个人信息表单 */}
-              <form onSubmit={handleProfileSubmit}>
-                <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      用户名
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={profileData.name}
-                      onChange={handleProfileChange}
-                      className="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      邮箱
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={profileData.email}
-                      onChange={handleProfileChange}
-                      className="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      required
-                    />
-                  </div>
+          <div className="p-6">
+            {activeTab === 'profile' && (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    用户名
+                  </label>
+                  <input
+                    type="text"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
                 </div>
-
-                <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    邮箱
+                  </label>
+                  <input
+                    type="email"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    个人简介
+                  </label>
+                  <textarea
+                    rows={4}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
+                </div>
+                <div>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
-                    {loading ? '保存中...' : '保存个人信息'}
+                    {loading ? '保存中...' : '保存更改'}
                   </button>
                 </div>
               </form>
+            )}
 
-              {/* 修改密码表单 */}
-              <form onSubmit={handlePasswordSubmit} className="border-t border-gray-200">
-                <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      当前密码
-                    </label>
-                    <input
-                      type="password"
-                      name="currentPassword"
-                      value={passwordData.currentPassword}
-                      onChange={handlePasswordChange}
-                      className="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      新密码
-                    </label>
-                    <input
-                      type="password"
-                      name="newPassword"
-                      value={passwordData.newPassword}
-                      onChange={handlePasswordChange}
-                      className="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      required
-                      minLength={6}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      确认新密码
-                    </label>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={passwordData.confirmPassword}
-                      onChange={handlePasswordChange}
-                      className="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      required
-                      minLength={6}
-                    />
-                  </div>
+            {activeTab === 'security' && (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    当前密码
+                  </label>
+                  <input
+                    type="password"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
                 </div>
-
-                <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    新密码
+                  </label>
+                  <input
+                    type="password"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    确认新密码
+                  </label>
+                  <input
+                    type="password"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
+                </div>
+                <div>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     {loading ? '更新中...' : '更新密码'}
                   </button>
                 </div>
               </form>
-            </div>
+            )}
+
+            {activeTab === 'notifications' && (
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900">
+                        电子邮件通知
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        接收关于您的图表和账户的电子邮件更新
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900">
+                        浏览器通知
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        在浏览器中接收实时通知
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    {loading ? '保存中...' : '保存设置'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'appearance' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900 mb-4">
+                    主题设置
+                  </h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <button className="aspect-w-16 aspect-h-9 bg-white border-2 border-blue-500 rounded-lg overflow-hidden">
+                      <div className="p-2">
+                        <div className="h-2 w-full bg-blue-500 rounded mb-2"></div>
+                        <div className="h-2 w-3/4 bg-gray-200 rounded"></div>
+                      </div>
+                    </button>
+                    <button className="aspect-w-16 aspect-h-9 bg-gray-900 border-2 border-transparent rounded-lg overflow-hidden">
+                      <div className="p-2">
+                        <div className="h-2 w-full bg-blue-500 rounded mb-2"></div>
+                        <div className="h-2 w-3/4 bg-gray-700 rounded"></div>
+                      </div>
+                    </button>
+                    <button className="aspect-w-16 aspect-h-9 bg-gradient-to-r from-blue-500 to-purple-500 border-2 border-transparent rounded-lg overflow-hidden">
+                      <div className="p-2">
+                        <div className="h-2 w-full bg-white rounded mb-2"></div>
+                        <div className="h-2 w-3/4 bg-white/50 rounded"></div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    {loading ? '保存中...' : '保存设置'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

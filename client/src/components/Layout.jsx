@@ -1,11 +1,17 @@
 import React from 'react';
-import Navigation from './Navigation';
+import Navbar from './Navbar';
+import Sidebar from './Sidebar';
+import BottomBar from './BottomBar';
 
 const Layout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      <main>{children}</main>
+      <Navbar />
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 p-6">{children}</main>
+      </div>
+      <BottomBar />
     </div>
   );
 };

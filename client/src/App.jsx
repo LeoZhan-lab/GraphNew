@@ -1,9 +1,10 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
-import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // 页面组件
 import Login from './pages/Login';
@@ -11,7 +12,9 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
-import ChartEditor from './pages/ChartEditor';
+import MyCharts from './pages/MyCharts';
+import EditChart from './pages/EditChart';
+import Help from './pages/Help';
 import UserSettings from './pages/UserSettings';
 
 function App() {
@@ -20,50 +23,40 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            {/* 公开路由 */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
-
-            {/* 受保护路由 */}
+            
             <Route
               path="/"
               element={
                 <ProtectedRoute>
-                  <Layout>
-                    <Navigate to="/login" replace />
-                  </Layout>
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/dashboard"
+              path="/my-charts"
               element={
                 <ProtectedRoute>
-                  <Layout>
-                    <Dashboard />
-                  </Layout>
+                  <MyCharts />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/chart/new"
+              path="/edit/:id"
               element={
                 <ProtectedRoute>
-                  <Layout>
-                    <ChartEditor />
-                  </Layout>
+                  <EditChart />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/chart/:id"
+              path="/help"
               element={
                 <ProtectedRoute>
-                  <Layout>
-                    <ChartEditor />
-                  </Layout>
+                  <Help />
                 </ProtectedRoute>
               }
             />
@@ -71,14 +64,13 @@ function App() {
               path="/settings"
               element={
                 <ProtectedRoute>
-                  <Layout>
-                    <UserSettings />
-                  </Layout>
+                  <UserSettings />
                 </ProtectedRoute>
               }
             />
           </Routes>
         </Router>
+        <ToastContainer position="top-right" autoClose={3000} />
       </AuthProvider>
     </ErrorBoundary>
   );

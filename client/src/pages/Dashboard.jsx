@@ -1,134 +1,152 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { getUserCharts, deleteChart } from '../services/chartService';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from 'react';
+import Layout from '../components/Layout';
+import ChartPreview from '../components/ChartPreview';
+import ChartCustomizer from '../components/ChartCustomizer';
+import { ChartBarIcon, ChartPieIcon, ChartLineIcon } from '@heroicons/react/24/outline';
+import TemplateGallery from '../components/TemplateGallery';
+import ThemeManager from '../components/ThemeManager';
+import DataImporter from '../components/DataImporter';
+import DataExporter from '../components/DataExporter';
 
 const Dashboard = () => {
-  const { user } = useAuth();
-  const [charts, setCharts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    loadCharts();
-  }, []);
-
-  const loadCharts = async () => {
-    try {
-      const data = await getUserCharts();
-      setCharts(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  const [chartType, setChartType] = useState('bar');
+  const [chartData, setChartData] = useState(null);
+  const [chartOptions, setChartOptions] = useState({
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: '我的图表'
+      }
     }
+  });
+  const [showTemplates, setShowTemplates] = useState(true);
+
+  const chartTypes = [
+    { id: 'bar', name: '柱状图', icon: ChartBarIcon },
+    { id: 'line', name: '折线图', icon: ChartLineIcon },
+    { id: 'pie', name: '饼图', icon: ChartPieIcon },
+    { id: 'doughnut', name: '环形图', icon: ChartPieIcon },
+  ];
+
+  const handleThemeChange = (theme) => {
+    setChartOptions(prev => ({
+      ...prev,
+      plugins: {
+        ...prev.plugins,
+        colors: theme.colors
+      }
+    }));
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('确定要删除这个图表吗？')) return;
-    
-    try {
-      await deleteChart(id);
-      setCharts(charts.filter(chart => chart._id !== id));
-    } catch (err) {
-      setError(err.message);
-    }
+  const handleDataImport = (data) => {
+    setChartData(data);
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">我的图表</h1>
-            <Link
-              to="/chart/new"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+    <Layout>
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">创建图表</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            选择模板或自定义创建专业的数据可视化图表
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <div className="flex space-x-4">
+            <button
+              onClick={() => setShowTemplates(true)}
+              className={`px-4 py-2 text-sm font-medium rounded-md ${
+                showTemplates
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
             >
-              创建新图表
-            </Link>
+              模板库
+            </button>
+            <button
+              onClick={() => setShowTemplates(false)}
+              className={`px-4 py-2 text-sm font-medium rounded-md ${
+                !showTemplates
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              自定义创建
+            </button>
           </div>
         </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {error && (
-          <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-        )}
-
-        {charts.length === 0 ? (
-          <div className="text-center py-12">
-            <h3 className="mt-2 text-sm font-medium text-gray-900">暂无图表</h3>
-            <p className="mt-1 text-sm text-gray-500">开始创建您的第一个图表吧</p>
-            <div className="mt-6">
-              <Link
-                to="/chart/new"
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-              >
-                创建新图表
-              </Link>
-            </div>
-          </div>
+        {showTemplates ? (
+          <TemplateGallery />
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {charts.map((chart) => (
-              <div
-                key={chart._id}
-                className="bg-white overflow-hidden shadow rounded-lg"
-              >
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <img
-                        className="h-10 w-10"
-                        src={`/icons/${chart.type}.svg`}
-                        alt={chart.type}
-                      />
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          {chart.title}
-                        </dt>
-                        <dd className="flex items-center text-sm text-gray-900">
-                          <span className="truncate">{chart.description}</span>
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gray-50 px-5 py-3">
-                  <div className="text-sm">
-                    <Link
-                      to={`/chart/${chart._id}`}
-                      className="font-medium text-primary hover:text-primary-dark"
-                    >
-                      查看详情
-                    </Link>
+          <div className="grid grid-cols-12 gap-6">
+            {/* 左侧面板 */}
+            <div className="col-span-3 space-y-6">
+              {/* 图表类型选择 */}
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">图表类型</h3>
+                <div className="space-y-2">
+                  {chartTypes.map((type) => (
                     <button
-                      onClick={() => handleDelete(chart._id)}
-                      className="ml-6 font-medium text-red-600 hover:text-red-800"
+                      key={type.id}
+                      onClick={() => setChartType(type.id)}
+                      className={`w-full flex items-center px-4 py-2 rounded-md ${
+                        chartType === type.id
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
                     >
-                      删除
+                      <type.icon className="h-5 w-5 mr-2" />
+                      {type.name}
                     </button>
-                  </div>
+                  ))}
                 </div>
               </div>
-            ))}
+
+              {/* 主题设置 */}
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <ThemeManager onThemeChange={handleThemeChange} />
+              </div>
+
+              {/* 图表自定义设置 */}
+              <ChartCustomizer
+                options={chartOptions}
+                setOptions={setChartOptions}
+                type={chartType}
+              />
+
+              {/* 数据导入面板 */}
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <DataImporter onDataImport={handleDataImport} />
+              </div>
+
+              {/* 数据导出面板 */}
+              {chartData && (
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <DataExporter chartData={chartData} />
+                </div>
+              )}
+            </div>
+
+            {/* 右侧预览区域 */}
+            <div className="col-span-9">
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <ChartPreview
+                  type={chartType}
+                  data={chartData}
+                  options={chartOptions}
+                />
+              </div>
+            </div>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 };
 
