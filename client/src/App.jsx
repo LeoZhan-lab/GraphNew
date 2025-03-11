@@ -16,6 +16,7 @@ import MyCharts from './pages/MyCharts';
 import EditChart from './pages/EditChart';
 import Help from './pages/Help';
 import UserSettings from './pages/UserSettings';
+import ChartEditor from './pages/ChartEditor';
 
 function App() {
   return (
@@ -23,13 +24,16 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
+            {/* 公开路由 */}
+            <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             
+            {/* 受保护的路由 */}
             <Route
-              path="/"
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <Dashboard />
@@ -45,10 +49,18 @@ function App() {
               }
             />
             <Route
-              path="/edit/:id"
+              path="/chart/new"
               element={
                 <ProtectedRoute>
-                  <EditChart />
+                  <ChartEditor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chart/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <ChartEditor />
                 </ProtectedRoute>
               }
             />
@@ -69,8 +81,8 @@ function App() {
               }
             />
           </Routes>
+          <ToastContainer />
         </Router>
-        <ToastContainer position="top-right" autoClose={3000} />
       </AuthProvider>
     </ErrorBoundary>
   );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Layout from '../components/Layout';
-import { UserCircleIcon, KeyIcon, BellIcon, PaletteIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, KeyIcon, BellIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 
 const UserSettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -24,7 +24,7 @@ const UserSettings = () => {
     { id: 'profile', name: '个人资料', icon: UserCircleIcon },
     { id: 'security', name: '安全设置', icon: KeyIcon },
     { id: 'notifications', name: '通知设置', icon: BellIcon },
-    { id: 'appearance', name: '外观设置', icon: PaletteIcon },
+    { id: 'appearance', name: '外观设置', icon: Squares2X2Icon },
   ];
 
   return (

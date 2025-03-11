@@ -9,19 +9,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@headlessui/react": "^1.7.18",
-    "@heroicons/react": "^2.1.1",
+    "@headlessui/react": "^1.7.19",
+    "@heroicons/react": "^2.2.0",
     "@reduxjs/toolkit": "^2.2.1",
     "axios": "^1.6.7",
-    "chart.js": "^4.4.1",
+    "chart.js": "^4.4.8",
+    "framer-motion": "^12.4.12",
+    "papaparse": "^5.5.2",
     "react": "^18.2.0",
-    "react-chartjs-2": "^5.2.0",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.2",
-    "papaparse": "^5.4.1",
+    "react-toastify": "^11.0.5",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.10",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.3",

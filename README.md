@@ -54,7 +54,7 @@ npm run dev
 
 4. 访问应用
 - 前端: http://localhost:3000
-- 后端: http://localhost:5001
+- 后端: http://localhost:5000
 
 ## 测试账号
 - 邮箱: test@example.com

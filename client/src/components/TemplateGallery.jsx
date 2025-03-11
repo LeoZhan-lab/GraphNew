@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ChartBarIcon,
   ChartPieIcon,
-  ChartLineIcon,
+  ChartBarSquareIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
@@ -45,7 +45,7 @@ const TemplateGallery = () => {
   const categories = [
     { id: 'all', name: '全部', icon: SparklesIcon },
     { id: 'business', name: '商业', icon: ChartBarIcon },
-    { id: 'data', name: '数据分析', icon: ChartLineIcon },
+    { id: 'data', name: '数据分析', icon: ChartBarSquareIcon },
     { id: 'presentation', name: '演示', icon: ChartPieIcon },
   ];
 

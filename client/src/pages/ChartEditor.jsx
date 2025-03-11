@@ -2,6 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Chart as ChartJS } from 'chart.js/auto';
 import { getChart, createChart, updateChart, importFromCSV, importFromExcel } from '../services/chartService';
+import { motion } from 'framer-motion';
+import {
+  ChartBarIcon,
+  ChartPieIcon,
+  PresentationChartLineIcon,
+  TableCellsIcon,
+  SwatchIcon,
+  AdjustmentsHorizontalIcon,
+  ArrowDownTrayIcon,
+  ShareIcon,
+  ArrowLeftIcon,
+  CheckIcon
+} from '@heroicons/react/24/outline';
+import DataTableEditor from '../components/DataTableEditor';
 
 const chartTypes = [
   { id: 'bar', name: '柱状图' },
@@ -51,6 +65,10 @@ const ChartEditor = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [chartType, setChartType] = useState('line');
+  const [activeTab, setActiveTab] = useState('data');
+  const [chartTitle, setChartTitle] = useState('未命名图表');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -151,6 +169,13 @@ const ChartEditor = () => {
     }
   };
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    // 模拟保存操作
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsSaving(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -160,125 +185,173 @@ const ChartEditor = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="md:grid md:grid-cols-3 md:gap-6">
-          <div className="md:col-span-1">
-            <div className="px-4 sm:px-0">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">
-                {id ? '编辑图表' : '创建新图表'}
-              </h3>
-              <p className="mt-1 text-sm text-gray-600">
-                请填写图表信息并上传数据
-              </p>
+    <div className="min-h-screen bg-gray-900">
+      {/* 顶部工具栏 */}
+      <div className="bg-gray-800/50 backdrop-blur-lg border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => window.history.back()}
+              className="p-2 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition duration-200"
+            >
+              <ArrowLeftIcon className="h-5 w-5" />
+            </button>
+            <input
+              type="text"
+              value={chartTitle}
+              onChange={(e) => setChartTitle(e.target.value)}
+              className="bg-transparent border-none text-white text-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg px-2 py-1"
+            />
+          </div>
+          <div className="flex items-center space-x-3">
+            <button className="px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition duration-200 flex items-center">
+              <ShareIcon className="h-5 w-5 mr-2" />
+              分享
+            </button>
+            <button className="px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition duration-200 flex items-center">
+              <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
+              导出
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white flex items-center transition duration-200 disabled:opacity-50"
+            >
+              {isSaving ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  保存中...
+                </>
+              ) : (
+                <>
+                  <CheckIcon className="h-5 w-5 mr-2" />
+                  保存
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 主要编辑区域 */}
+      <div className="max-w-7xl mx-auto px-4 py-6 flex gap-6">
+        {/* 左侧面板 */}
+        <div className="w-80 flex-shrink-0">
+          <div className="bg-gray-800 rounded-xl overflow-hidden">
+            {/* 面板标签页 */}
+            <div className="flex border-b border-gray-700">
+              <button
+                onClick={() => setActiveTab('data')}
+                className={`flex-1 px-4 py-3 text-sm font-medium ${
+                  activeTab === 'data'
+                    ? 'text-white bg-gray-700'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                <TableCellsIcon className="h-5 w-5 mx-auto mb-1" />
+                数据
+              </button>
+              <button
+                onClick={() => setActiveTab('style')}
+                className={`flex-1 px-4 py-3 text-sm font-medium ${
+                  activeTab === 'style'
+                    ? 'text-white bg-gray-700'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                <SwatchIcon className="h-5 w-5 mx-auto mb-1" />
+                样式
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`flex-1 px-4 py-3 text-sm font-medium ${
+                  activeTab === 'settings'
+                    ? 'text-white bg-gray-700'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                <AdjustmentsHorizontalIcon className="h-5 w-5 mx-auto mb-1" />
+                设置
+              </button>
+            </div>
+
+            {/* 面板内容 */}
+            <div className="p-4">
+              {activeTab === 'data' && (
+                <div className="space-y-4">
+                  {/* 图表类型选择 */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { type: 'line', icon: PresentationChartLineIcon, label: '折线图' },
+                      { type: 'bar', icon: ChartBarIcon, label: '柱状图' },
+                      { type: 'pie', icon: ChartPieIcon, label: '饼图' },
+                    ].map(({ type, icon: Icon, label }) => (
+                      <button
+                        key={type}
+                        onClick={() => setChartType(type)}
+                        className={`p-3 rounded-lg flex flex-col items-center ${
+                          chartType === type
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-white'
+                        }`}
+                      >
+                        <Icon className="h-6 w-6 mb-1" />
+                        <span className="text-xs">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* 数据编辑器 */}
+                  <DataTableEditor data={formData.data} onChange={(newData) => setFormData(prev => ({ ...prev, data: newData }))} />
+                </div>
+              )}
+
+              {activeTab === 'style' && (
+                <div className="space-y-4">
+                  {/* 配色方案 */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-300">配色方案</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {['#3B82F6', '#10B981', '#6366F1', '#F59E0B'].map((color) => (
+                        <button
+                          key={color}
+                          className="w-full aspect-square rounded-lg"
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 其他样式选项 */}
+                  {/* ... */}
+                </div>
+              )}
+
+              {activeTab === 'settings' && (
+                <div className="space-y-4">
+                  {/* 图表设置 */}
+                  {/* ... */}
+                </div>
+              )}
             </div>
           </div>
+        </div>
 
-          <div className="mt-5 md:mt-0 md:col-span-2">
-            <form onSubmit={handleSubmit}>
-              <div className="shadow sm:rounded-md sm:overflow-hidden">
-                <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-                  {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                      {error}
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      图表标题
-                    </label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleInputChange}
-                      className="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      描述
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      图表类型
-                    </label>
-                    <select
-                      name="type"
-                      value={formData.type}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                    >
-                      {chartTypes.map(type => (
-                        <option key={type.id} value={type.id}>
-                          {type.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      上传数据
-                    </label>
-                    <input
-                      type="file"
-                      accept=".csv,.xls,.xlsx"
-                      onChange={handleFileUpload}
-                      className="mt-1 block w-full text-sm text-gray-500
-                        file:mr-4 file:py-2 file:px-4
-                        file:rounded-full file:border-0
-                        file:text-sm file:font-semibold
-                        file:bg-primary file:text-white
-                        hover:file:bg-primary-dark"
-                    />
-                  </div>
-
-                  <div className="flex items-start">
-                    <div className="flex items-center h-5">
-                      <input
-                        type="checkbox"
-                        name="isPublic"
-                        checked={formData.isPublic}
-                        onChange={handleInputChange}
-                        className="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded"
-                      />
-                    </div>
-                    <div className="ml-3 text-sm">
-                      <label className="font-medium text-gray-700">公开图表</label>
-                      <p className="text-gray-500">允许其他用户查看此图表</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <canvas ref={chartRef}></canvas>
-                  </div>
-                </div>
-
-                <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                  >
-                    {loading ? '保存中...' : '保存'}
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
+        {/* 右侧预览区域 */}
+        <div className="flex-1">
+          <motion.div
+            layout
+            className="bg-gray-800 rounded-xl p-6"
+          >
+            <div className="aspect-w-16 aspect-h-9">
+              {chartType === 'line' && <Line data={formData.data} />}
+              {chartType === 'bar' && <Bar data={formData.data} />}
+              {chartType === 'pie' && <Pie data={formData.data} />}
+            </div>
+          </motion.div>
         </div>
       </div>
     </div>

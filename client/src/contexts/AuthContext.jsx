@@ -1,39 +1,45 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { getCurrentUser, logout } from '../services/authService';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { getCurrentUser } from '../services/authService';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        if (localStorage.getItem('token')) {
-          const userData = await getCurrentUser();
-          setUser(userData);
-        }
-      } catch (err) {
-        console.error('Failed to load user:', err);
-        setError(err.message);
-        logout();
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUser();
+    checkAuth();
   }, []);
 
-  const login = (userData) => {
-    setUser(userData.user);
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const userData = await getCurrentUser();
+        setUser(userData);
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      localStorage.removeItem('token');
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleLogout = () => {
-    logout();
+  const login = (userData, token) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+    localStorage.setItem('token', token);
+  };
+
+  const logout = () => {
     setUser(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem('token');
   };
 
   return (
@@ -41,10 +47,10 @@ export const AuthProvider = ({ children }) => {
       value={{
         user,
         loading,
-        error,
-        isAuthenticated: !!user,
+        isAuthenticated,
         login,
-        logout: handleLogout
+        logout,
+        checkAuth
       }}
     >
       {children}
@@ -52,4 +58,12 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext); 
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+export default AuthContext; 
